@@ -1,5 +1,5 @@
 {
-    "name": "not-a-robot-agency/wpforms-post-submissions",
+    "name": "landesberg-design/wpforms-post-submissions",
     "type": "wordpress-plugin",
     "description": "",
     "require": {
@@ -7,8 +7,7 @@
     },
     "authors": [
         {
-            "name": "Chris Jezowicz",
-            "email": "me@chrisjezowicz.com"
+            "name": "WPForms"
         }
     ]
 }
