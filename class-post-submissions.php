@@ -13,6 +13,7 @@ class WPForms_Post_Submissions {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
+
 		$this->init();
 	}
 
@@ -37,6 +38,7 @@ class WPForms_Post_Submissions {
 	 * @since 1.0.0
 	 */
 	public function load_template() {
+
 		require_once plugin_dir_path( __FILE__ ) . 'class-post-submissions-template.php';
 	}
 
@@ -50,7 +52,7 @@ class WPForms_Post_Submissions {
 		wp_enqueue_script(
 			'wpforms-builder-post-submissions',
 			plugin_dir_url( __FILE__ ) . 'assets/js/admin-builder-post-submissions' . wpforms_get_min_suffix() . '.js',
-			array( 'jquery' ),
+			[ 'jquery' ],
 			WPFORMS_POST_SUBMISSIONS_VERSION,
 			false
 		);
@@ -82,7 +84,7 @@ class WPForms_Post_Submissions {
 
 			foreach ( $settings['post_submissions_meta'] as $id ) {
 
-				if ( ! empty( $fields[ $id ]['type'] ) && 'file-upload' === $fields[ $id ]['type'] ) {
+				if ( ! empty( $fields[ $id ]['type'] ) && $fields[ $id ]['type'] === 'file-upload' ) {
 					$fields[ $id ]['media_library'] = '1';
 				}
 			}
@@ -106,7 +108,7 @@ class WPForms_Post_Submissions {
 	public function process_post_submission( $fields, $entry, $form_data, $entry_id = 0 ) {
 
 		$settings  = $form_data['settings'];
-		$post_args = array();
+		$post_args = [];
 
 		// Only process if enabled.
 		if ( empty( $settings['post_submissions'] ) ) {
@@ -140,10 +142,11 @@ class WPForms_Post_Submissions {
 
 		// Post Author.
 		if ( ! empty( $settings['post_submissions_author'] ) ) {
-			if ( 'current_user' === $settings['post_submissions_author'] ) {
+			if ( $settings['post_submissions_author'] === 'current_user' ) {
 				$post_args['post_author'] = get_current_user_id();
-				if ( 0 === $post_args['post_author'] ) {
-					$form = get_post( $form_data['id'], ARRAY_A ); // phpcs:ignore
+
+				if ( $post_args['post_author'] === 0 ) {
+					$form                     = get_post( $form_data['id'], ARRAY_A );
 					$post_args['post_author'] = $form['post_author'];
 				}
 			} else {
@@ -165,11 +168,11 @@ class WPForms_Post_Submissions {
 			wpforms_log(
 				'Post Submission Error',
 				$post_id->get_error_message(),
-				array(
-					'type'    => array( 'error' ),
+				[
+					'type'    => [ 'error' ],
 					'parent'  => $entry_id,
 					'form_id' => $form_data['id'],
-				)
+				]
 			);
 
 			return;
@@ -177,13 +180,12 @@ class WPForms_Post_Submissions {
 
 		// Featured Image.
 		if ( ! empty( $settings['post_submissions_featured'] ) && ! empty( $fields[ $settings['post_submissions_featured'] ] ) ) {
-			$file = $fields[ $settings['post_submissions_featured'] ];
-
-			$style = ! empty( $file['style'] ) ? $file['style'] : \WPForms_Field_File_Upload::STYLE_CLASSIC;
+			$file  = $fields[ $settings['post_submissions_featured'] ];
+			$style = ! empty( $file['style'] ) ? $file['style'] : WPForms_Field_File_Upload::STYLE_CLASSIC;
 
 			// Modern or classic file uploader?
 			switch ( $style ) {
-				case \WPForms_Field_File_Upload::STYLE_CLASSIC:
+				case WPForms_Field_File_Upload::STYLE_CLASSIC:
 					if ( ! empty( $file['attachment_id'] ) ) {
 
 						update_post_meta( $post_id, '_thumbnail_id', $file['attachment_id'] );
@@ -192,17 +194,19 @@ class WPForms_Post_Submissions {
 
 						// Attach featured image to the post.
 						wp_insert_attachment(
-							array(
+							[
 								'ID'             => $file['attachment_id'],
 								'post_parent'    => $post_id,
+								'post_title'     => $this->get_wp_media_file_title( $file ),
 								'guid'           => $file['value'],
 								'post_mime_type' => $filetype['type'],
-							)
+							]
 						);
 					}
+
 					break;
 
-				case \WPForms_Field_File_Upload::STYLE_MODERN:
+				case WPForms_Field_File_Upload::STYLE_MODERN:
 					if (
 						! empty( $file['value_raw'][0]['attachment_id'] ) &&
 						! empty( $file['value_raw'][0]['type'] ) &&
@@ -212,14 +216,16 @@ class WPForms_Post_Submissions {
 
 						// Attach featured image to the post.
 						wp_insert_attachment(
-							array(
+							[
 								'ID'             => $file['value_raw'][0]['attachment_id'],
 								'post_parent'    => $post_id,
+								'post_title'     => $this->get_wp_media_file_title( $file['value_raw'][0] ),
 								'guid'           => $file['value_raw'][0]['value'],
 								'post_mime_type' => $file['value_raw'][0]['type'],
-							)
+							]
 						);
 					}
+
 					break;
 			}
 
@@ -231,16 +237,16 @@ class WPForms_Post_Submissions {
 
 			foreach ( $settings['post_submissions_meta'] as $key => $id ) {
 
-				if ( empty( $key ) || ( empty( $id ) && '0' !== $id ) ) {
+				if ( empty( $key ) || ( empty( $id ) && $id !== '0' ) ) {
 					continue;
 				}
 
-				if ( 'file-upload' === $fields[ $id ]['type'] ) {
+				if ( $fields[ $id ]['type'] === 'file-upload' ) {
 
-					$style = ! empty( $fields[ $id ]['style'] ) ? $fields[ $id ]['style'] : \WPForms_Field_File_Upload::STYLE_CLASSIC;
+					$style = ! empty( $fields[ $id ]['style'] ) ? $fields[ $id ]['style'] : WPForms_Field_File_Upload::STYLE_CLASSIC;
 
 					switch ( $style ) {
-						case \WPForms_Field_File_Upload::STYLE_CLASSIC:
+						case WPForms_Field_File_Upload::STYLE_CLASSIC:
 							if ( ! empty( $fields[ $id ]['attachment_id'] ) ) {
 
 								update_post_meta( $post_id, esc_html( $key ), $fields[ $id ]['attachment_id'] );
@@ -249,18 +255,20 @@ class WPForms_Post_Submissions {
 
 								// Attach file to the post.
 								wp_insert_attachment(
-									array(
+									[
 										'ID'             => $fields[ $id ]['attachment_id'],
 										'post_parent'    => $post_id,
+										'post_title'     => $this->get_wp_media_file_title( $fields[ $id ] ),
 										'guid'           => $fields[ $id ]['value'],
 										'post_mime_type' => $filetype['type'],
-									)
+									]
 								);
 							}
+
 							break;
 
-						case \WPForms_Field_File_Upload::STYLE_MODERN:
-							$file_attachments = array();
+						case WPForms_Field_File_Upload::STYLE_MODERN:
+							$file_attachments = [];
 
 							if ( ! is_array( $fields[ $id ]['value_raw'] ) ) {
 								continue 2; // Get out of the switch and continue 'post_submissions_meta' foreach.
@@ -275,12 +283,13 @@ class WPForms_Post_Submissions {
 
 								// Attach file to the post.
 								wp_insert_attachment(
-									array(
+									[
 										'ID'             => $file['attachment_id'],
 										'post_parent'    => $post_id,
+										'post_title'     => $this->get_wp_media_file_title( $file ),
 										'guid'           => $file['value'],
 										'post_mime_type' => $file['type'],
-									)
+									]
 								);
 							}
 
@@ -289,18 +298,17 @@ class WPForms_Post_Submissions {
 								$file_attachments = 1 === count( $file_attachments )
 									? array_shift( $file_attachments )
 									: $file_attachments;
+
 								update_post_meta( $post_id, esc_html( $key ), $file_attachments );
 							}
+
 							break;
 					}
-				} elseif ( ! empty( $fields[ $id ]['value'] ) ) {
+				} elseif ( isset( $fields[ $id ]['value'] ) && ! wpforms_is_empty_string( $fields[ $id ]['value'] ) ) {
 
 					$value = apply_filters( 'wpforms_post_submissions_process_meta', $fields[ $id ]['value'], $key, $id, $fields, $form_data );
 
-					// The Events Calendar.
-					if ( in_array( $key, array( '_EventStartDate', '_EventEndDate' ), true ) ) {
-						$value = date( 'Y-m-d H:i:s', $fields[ $id ]['unix'] );
-					}
+					$value = $this->maybe_adjust_events_calendar_meta_value( $value, $key, $fields[ $id ] );
 
 					update_post_meta( $post_id, esc_html( $key ), $value );
 				}
@@ -331,8 +339,40 @@ class WPForms_Post_Submissions {
 
 		// Associate post id with entry.
 		if ( ! empty( $entry_id ) ) {
-			wpforms()->entry->update( $entry_id, array( 'post_id' => $post_id ), '', '', array( 'cap' => false ) );
+			wpforms()->get( 'entry' )->update( $entry_id, [ 'post_id' => $post_id ], '', '', [ 'cap' => false ] );
 		}
+	}
+
+	/**
+	 * Maybe adjust the Events Calendar meta.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param string $value Meta value.
+	 * @param string $key   Meta key.
+	 * @param array  $field Field data.
+	 *
+	 * @return string
+	 */
+	private function maybe_adjust_events_calendar_meta_value( $value, $key, $field ) {
+
+		if ( ! in_array( $key, [ '_EventStartDate', '_EventEndDate', '_EventStartDateUTC', '_EventEndDateUTC' ], true ) ) {
+			return $value;
+		}
+
+		// Date/Time field is required.
+		if ( empty( $field['unix'] ) ) {
+			return $value;
+		}
+
+		// Set a date value with required format.
+		$value = gmdate( 'Y-m-d H:i:s', $field['unix'] );
+
+		if ( class_exists( 'Tribe__Timezones' ) && in_array( $key, [ '_EventStartDateUTC', '_EventEndDateUTC' ], true ) ) {
+			return Tribe__Timezones::to_utc( $value, Tribe__Timezones::wp_timezone_string() );
+		}
+
+		return $value;
 	}
 
 	/**
@@ -365,23 +405,19 @@ class WPForms_Post_Submissions {
 
 		echo '<div class="wpforms-panel-content-section-title">';
 		esc_html_e( 'Post Submissions', 'wpforms-post-submissions' );
-		echo '<a href="https://wpforms.com/docs/how-to-install-and-use-the-post-submissions-addon-in-wpforms" target="_blank" rel="noopener noreferrer"><i class="fa fa-question-circle wpforms-help-tooltip" title="' . esc_attr__( 'Click here for documentation on Post Submissions addon', 'wpforms-post-submissions' ) . '"></i></a>';
+		echo '<a href="https://wpforms.com/docs/how-to-install-and-use-the-post-submissions-addon-in-wpforms" target="_blank" rel="noopener noreferrer"><i class="fa fa-question-circle-o wpforms-help-tooltip" title="' . esc_attr__( 'Click here for documentation on Post Submissions addon', 'wpforms-post-submissions' ) . '"></i></a>';
 		echo '</div>';
 
 		// Toggle.
 		wpforms_panel_field(
-			'select',
+			'toggle',
 			'settings',
 			'post_submissions',
 			$instance->form_data,
-			esc_html__( 'Post Submissions', 'wpforms-post-submissions' ),
-			array(
-				'options' => array(
-					''  => esc_html__( 'Off', 'wpforms' ),
-					'1' => esc_html__( 'On', 'wpforms' ),
-				),
-			)
+			esc_html__( 'Enable Post Submissions', 'wpforms-post-submissions' )
 		);
+
+		echo '<div id="wpforms-post-submissions-content-block">';
 
 		// Post Title.
 		wpforms_panel_field(
@@ -403,10 +439,10 @@ class WPForms_Post_Submissions {
 			'post_submissions_content',
 			$instance->form_data,
 			esc_html__( 'Post Content', 'wpforms-post-submissions' ),
-			array(
-				'field_map'   => array( 'textarea' ),
+			[
+				'field_map'   => [ 'textarea', 'richtext' ],
 				'placeholder' => esc_html__( '--- Select Field ---', 'wpforms-post-submissions' ),
-			)
+			]
 		);
 
 		// Post Excerpt.
@@ -416,10 +452,10 @@ class WPForms_Post_Submissions {
 			'post_submissions_excerpt',
 			$instance->form_data,
 			esc_html__( 'Post Excerpt', 'wpforms-post-submissions' ),
-			array(
-				'field_map'   => array( 'textarea', 'text' ),
+			[
+				'field_map'   => [ 'textarea', 'text', 'richtext' ],
 				'placeholder' => esc_html__( '--- Select Field ---', 'wpforms-post-submissions' ),
-			)
+			]
 		);
 
 		// Post Featured Image.
@@ -546,8 +582,23 @@ class WPForms_Post_Submissions {
 		</div>
 
 		<?php
-		echo '</div>';
+		echo '</div></div>';
 	}
+
+	/**
+	 * Generate an attachment title used in WordPress Media Library for an uploaded file.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param array $field_data Field data.
+	 *
+	 * @return string
+	 */
+	private function get_wp_media_file_title( $field_data ) {
+
+		return isset( $field_data['file_user_name'] ) ? $field_data['file_user_name'] : '';
+	}
+
 }
 
-new WPForms_Post_Submissions;
+new WPForms_Post_Submissions();

@@ -1,4 +1,6 @@
-;(function ( $ ) {
+'use strict';
+
+( function( $ ) {
 
 	var WPFormsPostSubmissions = {
 
@@ -7,11 +9,11 @@
 		 *
 		 * @since 1.0.0
 		 */
-		init: function () {
+		init: function() {
 
 			WPFormsPostSubmissions.bindUIActions();
 
-			$( document ).ready( WPFormsPostSubmissions.ready );
+			$( WPFormsPostSubmissions.ready );
 		},
 
 		/**
@@ -19,8 +21,9 @@
 		 *
 		 * @since 1.0.0
 		 */
-		ready: function () {
+		ready: function() {
 
+			WPFormsPostSubmissions.conditionals();
 		},
 
 		/**
@@ -28,11 +31,11 @@
 		 *
 		 * @since 1.0.0
 		 */
-		bindUIActions: function () {
+		bindUIActions: function() {
 
 			// When a featured image field is configured, configure that file
 			// upload field to only accept images.
-			$( document ).on( 'change', '#wpforms-panel-field-settings-post_submissions_featured', function () {
+			$( document ).on( 'change', '#wpforms-panel-field-settings-post_submissions_featured', function() {
 
 				var fieldID = $( this ).find( 'option:selected' ).val();
 
@@ -41,8 +44,39 @@
 					$( '#wpforms-field-option-' + fieldID + '-max_file_number' ).val( 1 );
 				}
 			} );
-		}
+		},
+
+		/**
+		 * Show settings only if they are enabled.
+		 *
+		 * @since 1.4.0
+		 */
+		conditionals: function() {
+
+			if ( typeof $.fn.conditions === 'undefined' ) {
+				return;
+			}
+
+			$( '#wpforms-panel-field-settings-post_submissions' ).conditions( {
+				conditions: {
+					element: '#wpforms-panel-field-settings-post_submissions',
+					type: 'checked',
+					operator: 'is',
+				},
+				actions: {
+					if: {
+						element: '#wpforms-post-submissions-content-block',
+						action: 'show',
+					},
+					else: {
+						element: '#wpforms-post-submissions-content-block',
+						action: 'hide',
+					},
+				},
+				effect: 'appear',
+			} );
+		},
 	};
 
 	WPFormsPostSubmissions.init();
-})( jQuery );
+}( jQuery ) );

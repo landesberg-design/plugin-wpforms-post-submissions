@@ -73,10 +73,11 @@ class WPForms_Template_Post_Submission extends WPForms_Template {
 				),
 				'7'  => array(
 					'id'       => '7',
-					'type'     => 'textarea',
+					'type'     => 'richtext',
 					'label'    => esc_html__( 'Post Content', 'wpforms-post-submissions' ),
 					'required' => '1',
 					'size'     => 'medium',
+					'style'    => 'full',
 				),
 				'8'  => array(
 					'id'            => '8',
@@ -113,6 +114,7 @@ class WPForms_Template_Post_Submission extends WPForms_Template {
 			),
 			'settings' => array(
 				'antispam'                    => '1',
+				'ajax_submit'                 => '1',
 				'confirmation_message_scroll' => '1',
 				'submit_text'                 => esc_html__( 'Submit', 'wpforms-post-submissions' ),
 				'submit_text_processing'      => esc_html__( 'Sending...', 'wpforms-post-submissions' ),
@@ -137,13 +139,13 @@ class WPForms_Template_Post_Submission extends WPForms_Template {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param array $form_data
+	 * @param array $form_data Form data and settings.
 	 *
 	 * @return bool
 	 */
 	public function template_modal_conditional( $form_data ) {
 
-		return true;
+		return empty( $form_data['settings']['notifications'] );
 	}
 }
 

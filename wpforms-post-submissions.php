@@ -7,7 +7,7 @@
  * Requires PHP:      5.5
  * Author:            WPForms
  * Author URI:        https://wpforms.com
- * Version:           1.3.2
+ * Version:           1.4.0
  * Text Domain:       wpforms-post-submissions
  * Domain Path:       languages
  *
@@ -30,8 +30,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Plugin version.
-define( 'WPFORMS_POST_SUBMISSIONS_VERSION', '1.3.2' );
+/**
+ * Plugin version.
+ *
+ * @since 1.0.0
+ */
+define( 'WPFORMS_POST_SUBMISSIONS_VERSION', '1.4.0' );
 
 /**
  * Load the main class.
@@ -57,12 +61,12 @@ add_action( 'wpforms_loaded', 'wpforms_post_submissions' );
  *
  * @since 1.0.0
  *
- * @param string $key
+ * @param string $key License key.
  */
 function wpforms_post_submissions_updater( $key ) {
 
 	new WPForms_Updater(
-		array(
+		[
 			'plugin_name' => 'WPForms Post Submissions',
 			'plugin_slug' => 'wpforms-post-submissions',
 			'plugin_path' => plugin_basename( __FILE__ ),
@@ -70,7 +74,7 @@ function wpforms_post_submissions_updater( $key ) {
 			'remote_url'  => WPFORMS_UPDATER_API,
 			'version'     => WPFORMS_POST_SUBMISSIONS_VERSION,
 			'key'         => $key,
-		)
+		]
 	);
 }
 

@@ -1,5 +1,20 @@
 Change Log
-All notable changes to this project will be documented in this file, formatted via [this recommendation](http://keepachangelog.com/).
+All notable changes to this project will be documented in this file, formatted via [this recommendation](https://keepachangelog.com/).
+
+## [1.4.0] - 2022-05-26
+### Added
+- Compatibility with WPForms 1.6.8 and the updated Form Builder.
+- Compatibility with the Rich Text field.
+
+### Changed
+- Improved compatibility with jQuery 3.5 and no jQuery Migrate plugin.
+- Show settings in the Form Builder only if they are enabled.
+- Show a modal in the Form Builder about available additional options only once.
+
+### Fixed
+- `0` values were not allowed to save as custom post meta.
+- Images added as Post Featured Images didn't have titles.
+- Events Calendar plugin compatibility: start/end times had incorrect timezone.
 
 ## [1.3.2] - 2020-12-17
 ### Fixed
