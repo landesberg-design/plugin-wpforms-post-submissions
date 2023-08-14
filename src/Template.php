@@ -1,19 +1,15 @@
 <?php
-/**
- * Post Submissions form template file.
- *
- * @deprecated 1.5.0 Moved to /scr/PostSubmissionTemplate.php
- */
 
-_deprecated_file( __FILE__,  '1.5.0 of the WPForms Post Submissions addon', __DIR__ . '/scr/PostSubmissionTemplate.php' );
+namespace WPFormsPostSubmissions;
+
+use WPForms_Template;
 
 /**
  * Post Submissions form template.
  *
  * @since 1.0.0
- * @deprecated 1.5.0
  */
-class WPForms_Template_Post_Submission extends WPForms_Template {
+class Template extends WPForms_Template {
 
 	/**
 	 * Primary class constructor.
@@ -28,66 +24,68 @@ class WPForms_Template_Post_Submission extends WPForms_Template {
 		$this->includes    = '';
 		$this->icon        = '';
 		$this->core        = true;
-		$this->modal       = array(
+
+		$this->modal = [
 			'title'   => esc_html__( 'Don&#39;t Forget', 'wpforms-post-submissions' ),
 			'message' => esc_html__( 'Additional post submission options are available in the settings panel.', 'wpforms-post-submissions' ),
-		);
-		$this->data        = array(
+		];
+
+		$this->data = [
 			'field_id' => '11',
-			'fields'   => array(
-				'1'  => array(
+			'fields'   => [
+				'1'  => [
 					'id'            => '1',
 					'type'          => 'divider',
 					'label'         => esc_html__( 'Author Details', 'wpforms-post-submissions' ),
 					'description'   => esc_html__( 'Please enter your contact details, so we can give you proper credit for this blog post.', 'wpforms-post-submissions' ),
 					'label_disable' => '1',
-				),
-				'2'  => array(
+				],
+				'2'  => [
 					'id'       => '2',
 					'type'     => 'name',
 					'label'    => esc_html__( 'Name', 'wpforms-post-submissions' ),
 					'format'   => 'first-last',
 					'required' => '1',
 					'size'     => 'medium',
-				),
-				'3'  => array(
+				],
+				'3'  => [
 					'id'       => '3',
 					'type'     => 'email',
 					'label'    => esc_html__( 'Email', 'wpforms-post-submissions' ),
 					'required' => '1',
 					'size'     => 'medium',
-				),
-				'4'  => array(
+				],
+				'4'  => [
 					'id'          => '4',
 					'type'        => 'textarea',
 					'label'       => esc_html__( 'Short Author Bio', 'wpforms-post-submissions' ),
 					'description' => esc_html__( 'Please keep it below 300 characters.', 'wpforms-post-submissions' ),
 					'required'    => '1',
 					'size'        => 'medium',
-				),
-				'5'  => array(
+				],
+				'5'  => [
 					'id'            => '5',
 					'type'          => 'divider',
 					'label'         => esc_html__( 'Create a Blog Post', 'wpforms-post-submissions' ),
 					'description'   => esc_html__( 'Please submit your guest blog posts by using the fields below.', 'wpforms-post-submissions' ),
 					'label_disable' => '1',
-				),
-				'6'  => array(
+				],
+				'6'  => [
 					'id'       => '6',
 					'type'     => 'text',
 					'label'    => esc_html__( 'Post Title', 'wpforms-post-submissions' ),
 					'required' => '1',
 					'size'     => 'medium',
-				),
-				'7'  => array(
+				],
+				'7'  => [
 					'id'       => '7',
 					'type'     => 'richtext',
 					'label'    => esc_html__( 'Post Content', 'wpforms-post-submissions' ),
 					'required' => '1',
 					'size'     => 'medium',
 					'style'    => 'full',
-				),
-				'8'  => array(
+				],
+				'8'  => [
 					'id'            => '8',
 					'type'          => 'file-upload',
 					'label'         => esc_html__( 'Featured Image', 'wpforms-post-submissions' ),
@@ -96,31 +94,31 @@ class WPForms_Template_Post_Submission extends WPForms_Template {
 					'size'          => 'medium',
 					'extensions'    => 'jpg,jpeg,png,gif',
 					'media_library' => '1',
-				),
-				'9'  => array(
+				],
+				'9'  => [
 					'id'       => '9',
 					'type'     => 'textarea',
 					'label'    => esc_html__( 'Post Excerpt', 'wpforms-post-submissions' ),
 					'required' => '1',
 					'size'     => 'small',
-				),
-				'10' => array(
+				],
+				'10' => [
 					'id'               => '10',
 					'type'             => 'select',
 					'label'            => esc_html__( 'Category', 'wpforms-post-submissions' ),
-					'choices'          => array(
-						'1' => array(
+					'choices'          => [
+						'1' => [
 							'label' => esc_html__( 'First Choice', 'wpforms-post-submissions' ),
 							'value' => '',
-						),
-					),
+						],
+					],
 					'required'         => '1',
 					'size'             => 'medium',
 					'dynamic_choices'  => 'taxonomy',
 					'dynamic_taxonomy' => 'category',
-				),
-			),
-			'settings' => array(
+				],
+			],
+			'settings' => [
 				'antispam'                    => '1',
 				'ajax_submit'                 => '1',
 				'confirmation_message_scroll' => '1',
@@ -134,11 +132,11 @@ class WPForms_Template_Post_Submission extends WPForms_Template {
 				'post_submissions_type'       => 'post',
 				'post_submissions_status'     => 'pending',
 				'post_submissions_author'     => 'current_user',
-			),
-			'meta'     => array(
+			],
+			'meta'     => [
 				'template' => $this->slug,
-			),
-		);
+			],
+		];
 	}
 
 	/**
@@ -157,4 +155,3 @@ class WPForms_Template_Post_Submission extends WPForms_Template {
 	}
 }
 
-new WPForms_Template_Post_Submission;

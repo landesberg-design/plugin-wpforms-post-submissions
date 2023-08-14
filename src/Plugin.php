@@ -1,25 +1,25 @@
 <?php
-/**
- * Main plugin file.
- *
- * @deprecated 1.5.0 Moved to /scr/Plugin.php
- */
 
-_deprecated_file( __FILE__,  '1.5.0 of the WPForms Post Submissions addon', __DIR__ . '/scr/Plugin.php' );
+namespace WPFormsPostSubmissions;
+
+use WP_Post;
+use WP_User_Query;
+use WPForms_Field_File_Upload;
+use WPForms_Updater;
+
 /**
  * Post Submissions.
  *
  * @since 1.0.0
- * @deprecated 1.5.0
  */
-class WPForms_Post_Submissions {
+class Plugin {
 
 	/**
 	 * Retrieve a single instance of the class.
 	 *
 	 * @since 1.5.0
 	 *
-	 * @return WPForms_Post_Submissions
+	 * @return Plugin
 	 */
 	public static function get_instance() {
 
@@ -55,6 +55,7 @@ class WPForms_Post_Submissions {
 
 		add_action( 'init', [ $this, 'load_template' ], 15, 1 );
 		add_action( 'wpforms_builder_enqueues', [ $this, 'admin_enqueues' ] );
+		add_action( 'wpforms_builder_strings', [ $this, 'add_strings' ], 10, 2 );
 		add_filter( 'wpforms_process_before_form_data', [ $this, 'override_file_uploads' ], 10, 2 );
 		add_action( 'wpforms_process_complete', [ $this, 'process_post_submission' ], 10, 4 );
 		add_filter( 'wpforms_builder_settings_sections', [ $this, 'settings_register' ], 20, 2 );
@@ -92,7 +93,7 @@ class WPForms_Post_Submissions {
 	 */
 	public function load_template() {
 
-		require_once plugin_dir_path( __FILE__ ) . 'class-post-submissions-template.php';
+		new Template();
 	}
 
 	/**
@@ -102,13 +103,48 @@ class WPForms_Post_Submissions {
 	 */
 	public function admin_enqueues() {
 
+		$min = wpforms_get_min_suffix();
+
+		wp_enqueue_style(
+			'wpforms-builder-post-submissions',
+			WPFORMS_POST_SUBMISSIONS_URL . "assets/css/admin-builder-post-submissions{$min}.css",
+			[],
+			WPFORMS_POST_SUBMISSIONS_VERSION
+		);
+
 		wp_enqueue_script(
 			'wpforms-builder-post-submissions',
-			plugin_dir_url( __FILE__ ) . 'assets/js/admin-builder-post-submissions' . wpforms_get_min_suffix() . '.js',
+			WPFORMS_POST_SUBMISSIONS_URL . "assets/js/admin-builder-post-submissions{$min}.js",
 			[ 'jquery' ],
 			WPFORMS_POST_SUBMISSIONS_VERSION,
-			false
+			true
 		);
+	}
+
+	/**
+	 * Add i18n strings.
+	 *
+	 * @since 1.5.0
+	 *
+	 * @param array   $strings Builder strings.
+	 * @param WP_Post $form    Active form.
+	 *
+	 * @return array
+	 */
+	public function add_strings( $strings, $form ) {
+
+		$strings['post_submissions'] = [
+			'disabling_options' => esc_html__( 'Some of the Field Options for the selected field will be disabled to prevent changes as long as the field is being used as the Post Featured Image.', 'wpforms-post-submissions' ),
+			'disabled_option'   => wp_kses(
+				__( 'This field is being used to upload the Post Featured Image. Some Field Options cannot be changed. You can change the Post Featured Image upload field by going to <strong>Settings » Post Submissions.</strong>', 'wpforms-post-submissions' ),
+				[
+					'strong' => [],
+				]
+			),
+			'image_extensions'  => 'jpg,jpeg,png,gif,webp',
+		];
+
+		return $strings;
 	}
 
 	/**
@@ -117,8 +153,8 @@ class WPForms_Post_Submissions {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param array $form_data
-	 * @param array $entry
+	 * @param array $form_data Form data.
+	 * @param array $entry     Entry.
 	 *
 	 * @return array
 	 */
@@ -158,7 +194,7 @@ class WPForms_Post_Submissions {
 	 * @param array $form_data The information for the form.
 	 * @param int   $entry_id  Entry ID.
 	 */
-	public function process_post_submission( $fields, $entry, $form_data, $entry_id = 0 ) {
+	public function process_post_submission( $fields, $entry, $form_data, $entry_id = 0 ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded, Generic.Metrics.NestingLevel.MaxExceeded, WPForms.PHP.HooksMethod.InvalidPlaceForAddingHooks
 
 		$settings  = $form_data['settings'];
 		$post_args = [];
@@ -215,6 +251,7 @@ class WPForms_Post_Submissions {
 		add_filter( 'wp_insert_post_empty_content', '__return_false' );
 
 		// Do it.
+		// phpcs:ignore WPForms.Comments.PHPDocHooks.RequiredHookDocumentation, WPForms.PHP.ValidateHooks.InvalidHookName
 		$post_id = wp_insert_post( apply_filters( 'wpforms_post_submissions_post_args', $post_args, $form_data, $fields ) );
 
 		// Check for errors.
@@ -258,7 +295,6 @@ class WPForms_Post_Submissions {
 							]
 						);
 					}
-
 					break;
 
 				case WPForms_Field_File_Upload::STYLE_MODERN:
@@ -280,7 +316,6 @@ class WPForms_Post_Submissions {
 							]
 						);
 					}
-
 					break;
 			}
 
@@ -319,7 +354,6 @@ class WPForms_Post_Submissions {
 									]
 								);
 							}
-
 							break;
 
 						case WPForms_Field_File_Upload::STYLE_MODERN:
@@ -356,11 +390,11 @@ class WPForms_Post_Submissions {
 
 								update_post_meta( $post_id, esc_html( $key ), $file_attachments );
 							}
-
 							break;
 					}
 				} elseif ( isset( $fields[ $id ]['value'] ) && ! wpforms_is_empty_string( $fields[ $id ]['value'] ) ) {
 
+					// phpcs:ignore WPForms.Comments.PHPDocHooks.RequiredHookDocumentation, WPForms.PHP.ValidateHooks.InvalidHookName
 					$value = apply_filters( 'wpforms_post_submissions_process_meta', $fields[ $id ]['value'], $key, $id, $fields, $form_data );
 
 					$value = $this->maybe_adjust_events_calendar_meta_value( $value, $key, $fields[ $id ] );
@@ -390,6 +424,7 @@ class WPForms_Post_Submissions {
 			}
 		}
 
+		// phpcs:ignore WPForms.Comments.PHPDocHooks.RequiredHookDocumentation, WPForms.PHP.ValidateHooks.InvalidHookName
 		do_action( 'wpforms_post_submissions_process', $post_id, $fields, $form_data, $entry_id );
 
 		// Associate post id with entry.
@@ -435,8 +470,8 @@ class WPForms_Post_Submissions {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param array $sections
-	 * @param array $form_data
+	 * @param array $sections  Section.
+	 * @param array $form_data Form data.
 	 *
 	 * @return array
 	 */
@@ -452,9 +487,9 @@ class WPForms_Post_Submissions {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param object $instance
+	 * @param object $instance Object instance.
 	 */
-	public function settings_content( $instance ) {
+	public function settings_content( $instance ) { //phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded
 
 		echo '<div class="wpforms-panel-content-section wpforms-panel-content-section-post_submissions">';
 
@@ -490,10 +525,10 @@ class WPForms_Post_Submissions {
 			'post_submissions_title',
 			$instance->form_data,
 			esc_html__( 'Post Title', 'wpforms-post-submissions' ),
-			array(
-				'field_map'   => array( 'text', 'name' ),
+			[
+				'field_map'   => [ 'text', 'name' ],
 				'placeholder' => esc_html__( '--- Select Field ---', 'wpforms-post-submissions' ),
-			)
+			]
 		);
 
 		// Post Content.
@@ -529,15 +564,17 @@ class WPForms_Post_Submissions {
 			'post_submissions_featured',
 			$instance->form_data,
 			esc_html__( 'Post Featured Image', 'wpforms-post-submissions' ),
-			array(
-				'field_map'   => array( 'file-upload' ),
+			[
+				'field_map'   => [ 'file-upload' ],
 				'placeholder' => esc_html__( '--- Select Field ---', 'wpforms-post-submissions' ),
-			)
+			]
 		);
 
 		// Post Type.
-		$types   = get_post_types( apply_filters( 'wpforms_post_submissions_post_type_args', array( 'public' => true ), $instance->form_data ), 'objects' );
-		$options = array();
+		// phpcs:ignore WPForms.Comments.PHPDocHooks.RequiredHookDocumentation, WPForms.PHP.ValidateHooks.InvalidHookName
+		$types   = get_post_types( apply_filters( 'wpforms_post_submissions_post_type_args', [ 'public' => true ], $instance->form_data ), 'objects' );
+		$options = [];
+
 		unset( $types['attachment'] );
 
 		foreach ( $types as $key => $type ) {
@@ -550,10 +587,10 @@ class WPForms_Post_Submissions {
 			'post_submissions_type',
 			$instance->form_data,
 			esc_html__( 'Post Type', 'wpforms-post-submissions' ),
-			array(
+			[
 				'options' => $options,
 				'default' => 'post',
-			)
+			]
 		);
 
 		// Post Status.
@@ -563,23 +600,25 @@ class WPForms_Post_Submissions {
 			'post_submissions_status',
 			$instance->form_data,
 			esc_html__( 'Post Status', 'wpforms-post-submissions' ),
-			array(
+			[
 				'tooltip' => esc_html__( 'Select the default status used for new posts.', 'wpforms-post-submissions' ),
 				'options' => get_post_statuses(),
 				'default' => 'pending',
-			)
+			]
 		);
 
 		// Post Author.
-		$user_args = array(
+		$user_args = [
 			'number'  => 999,
-			'fields'  => array( 'ID', 'display_name' ),
+			'fields'  => [ 'ID', 'display_name' ],
 			'orderby' => 'display_name',
-		);
-		$users     = new WP_User_Query( apply_filters( 'wpforms_post_submissions_user_args', $user_args ) );
-		$options   = array(
+		];
+
+		// phpcs:ignore WPForms.Comments.PHPDocHooks.RequiredHookDocumentation, WPForms.PHP.ValidateHooks.InvalidHookName
+		$users   = new WP_User_Query( apply_filters( 'wpforms_post_submissions_user_args', $user_args ) );
+		$options = [
 			'current_user' => esc_html__( 'Current User', 'wpforms-post-submissions' ),
-		);
+		];
 
 		if ( ! empty( $users->results ) ) {
 			foreach ( $users->results as $user ) {
@@ -593,42 +632,44 @@ class WPForms_Post_Submissions {
 			'post_submissions_author',
 			$instance->form_data,
 			esc_html__( 'Post Author', 'wpforms-post-submissions' ),
-			array(
+			[
 				'tooltip'     => esc_html__( 'Select the post author used for new posts. Selecting Current User will use the current WordPress user that submits the form.', 'wpforms-post-submissions' ),
 				'options'     => $options,
 				'placeholder' => esc_html__( '--- Select User ---', 'wpforms-post-submissions' ),
-			)
+			]
 		);
 		?>
 
 		<div class="wpforms-field-map-table">
-			<h3><?php _e( 'Custom Post Meta', 'wpforms-post-submissions' ); ?></h3>
+			<h3><?php esc_html_e( 'Custom Post Meta', 'wpforms-post-submissions' ); ?></h3>
 			<table>
 				<tbody>
 				<?php
 				$fields = wpforms_get_form_fields( $instance->form_data );
-				$meta   = ! empty( $instance->form_data['settings']['post_submissions_meta'] ) ? $instance->form_data['settings']['post_submissions_meta'] : array( false );
+				$meta   = ! empty( $instance->form_data['settings']['post_submissions_meta'] ) ? $instance->form_data['settings']['post_submissions_meta'] : [ false ];
+
 				foreach ( $meta as $meta_key => $meta_field ) :
 					$key  = $meta_field !== false ? preg_replace( '/[^a-zA-Z0-9_\-]/', '', $meta_key ) : '';
 					$name = ! empty( $key ) ? 'settings[post_submissions_meta][' . $key . ']' : '';
 					?>
 					<tr>
 						<td class="key">
-							<input type="text" class="key-source" value="<?php echo $key; ?>" placeholder="<?php esc_attr_e( 'Enter meta key...', 'wpforms-post-submissions' ); ?>">
+							<input type="text" class="key-source" value="<?php echo esc_attr( $key ); ?>" placeholder="<?php esc_attr_e( 'Enter meta key...', 'wpforms-post-submissions' ); ?>">
 						</td>
 						<td class="field">
-							<select data-name="settings[post_submissions_meta][{source}]" name="<?php echo $name; ?>"
-								class="key-destination wpforms-field-map-select" data-field-map-allowed="all-fields">
-								<option value=""><?php _e( '--- Select Field ---', 'wpforms-post-submissions' ); ?></option>
+							<select data-name="settings[post_submissions_meta][{source}]" name="<?php echo esc_attr( $name ); ?>"
+							        class="key-destination wpforms-field-map-select" data-field-map-allowed="all-fields">
+								<option value=""><?php esc_html_e( '--- Select Field ---', 'wpforms-post-submissions' ); ?></option>
 								<?php
 								if ( ! empty( $fields ) ) {
 									foreach ( $fields as $field_id => $field ) {
 										$label = ! empty( $field['label'] )
-												? $field['label']
-												: sprintf( /* translators: %d - field ID. */
-													__( 'Field #%d', 'wpforms-post-submissions' ),
-													absint( $field_id )
-												);
+											? $field['label']
+											: sprintf( /* translators: %d - field ID. */
+												__( 'Field #%d', 'wpforms-post-submissions' ),
+												absint( $field_id )
+											);
+
 										printf( '<option value="%s" %s>%s</option>', esc_attr( $field['id'] ), selected( $meta_field, $field_id, false ), esc_html( $label ) );
 									}
 								}

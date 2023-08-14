@@ -3,11 +3,11 @@
  * Plugin Name:       WPForms Post Submissions
  * Plugin URI:        https://wpforms.com
  * Description:       Post Submissions with WPForms.
- * Requires at least: 4.9
+ * Requires at least: 5.2
  * Requires PHP:      5.5
  * Author:            WPForms
  * Author URI:        https://wpforms.com
- * Version:           1.4.0
+ * Version:           1.5.0
  * Text Domain:       wpforms-post-submissions
  * Domain Path:       languages
  *
@@ -25,6 +25,8 @@
  * along with WPForms. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use WPFormsPostSubmissions\Plugin;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -35,47 +37,61 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-define( 'WPFORMS_POST_SUBMISSIONS_VERSION', '1.4.0' );
+const WPFORMS_POST_SUBMISSIONS_VERSION = '1.5.0';
 
 /**
- * Load the main class.
+ * Plugin file.
+ *
+ * @since 1.5.0
+ */
+const WPFORMS_POST_SUBMISSIONS_FILE = __FILE__;
+
+/**
+ * Plugin path.
+ *
+ * @since 1.5.0
+ */
+define( 'WPFORMS_POST_SUBMISSIONS_PATH', plugin_dir_path( WPFORMS_POST_SUBMISSIONS_FILE ) );
+
+/**
+ * Plugin URL.
+ *
+ * @since 1.5.0
+ */
+define( 'WPFORMS_POST_SUBMISSIONS_URL', plugin_dir_url( WPFORMS_POST_SUBMISSIONS_FILE ) );
+
+/**
+ * Check addon requirements.
  *
  * @since 1.0.0
+ * @since 1.5.0 Uses requirements feature.
  */
-function wpforms_post_submissions() {
+function wpforms_post_submissions_load() {
 
-	// WPForms Pro is required.
-	if ( ! wpforms()->pro ) {
+	$requirements = [
+		'file'    => WPFORMS_POST_SUBMISSIONS_FILE,
+		'wpforms' => '1.8.3',
+	];
+
+	if ( ! function_exists( 'wpforms_requirements' ) || ! wpforms_requirements( $requirements ) ) {
 		return;
 	}
 
-	load_plugin_textdomain( 'wpforms-post-submissions', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
-
-	require_once plugin_dir_path( __FILE__ ) . 'class-post-submissions.php';
+	wpforms_post_submissions();
 }
 
-add_action( 'wpforms_loaded', 'wpforms_post_submissions' );
+add_action( 'wpforms_loaded', 'wpforms_post_submissions_load' );
 
 /**
- * Load the plugin updater.
+ * Get the instance of the addon main class.
  *
  * @since 1.0.0
  *
- * @param string $key License key.
+ * @return Plugin
  */
-function wpforms_post_submissions_updater( $key ) {
+function wpforms_post_submissions() {
 
-	new WPForms_Updater(
-		[
-			'plugin_name' => 'WPForms Post Submissions',
-			'plugin_slug' => 'wpforms-post-submissions',
-			'plugin_path' => plugin_basename( __FILE__ ),
-			'plugin_url'  => trailingslashit( plugin_dir_url( __FILE__ ) ),
-			'remote_url'  => WPFORMS_UPDATER_API,
-			'version'     => WPFORMS_POST_SUBMISSIONS_VERSION,
-			'key'         => $key,
-		]
-	);
+	require_once WPFORMS_POST_SUBMISSIONS_PATH . 'vendor/autoload.php';
+
+	return Plugin::get_instance();
 }
-
-add_action( 'wpforms_updater', 'wpforms_post_submissions_updater' );

@@ -1,8 +1,0 @@
-extends: ./../../.codeception/_templates/plugin.base.yml
-coverage:
-    include:
-        - ./../src/*
-params:
-    - ./../../.codeception/_config/params.php
-settings:
-    shuffle: true

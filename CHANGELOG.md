@@ -1,6 +1,17 @@
 Change Log
 All notable changes to this project will be documented in this file, formatted via [this recommendation](https://keepachangelog.com/).
 
+## [1.5.0] - 2023-08-08
+### Changed
+- Minimum WPForms version supported is 1.8.3.
+
+### Fixed
+- Post featured Image field was prone to be set with incorrect settings.
+
+## [1.4.1] - 2023-07-03
+### Fixed
+- Compatibility with WPForms 1.8.2.2.
+
 ## [1.4.0] - 2022-05-26
 ### Added
 - Compatibility with WPForms 1.6.8 and the updated Form Builder.
@@ -15,6 +26,7 @@ All notable changes to this project will be documented in this file, formatted v
 - `0` values were not allowed to save as custom post meta.
 - Images added as Post Featured Images didn't have titles.
 - Events Calendar plugin compatibility: start/end times had incorrect timezone.
+- Featured Image GUID was created from the field label instead of the file name
 
 ## [1.3.2] - 2020-12-17
 ### Fixed
