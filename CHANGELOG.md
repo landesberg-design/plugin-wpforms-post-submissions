@@ -1,5 +1,17 @@
-Change Log
+# Changelog
 All notable changes to this project will be documented in this file, formatted via [this recommendation](https://keepachangelog.com/).
+
+## [1.6.0] - 2023-05-01
+### IMPORTANT
+- Support for PHP 5.6 has been discontinued. If you are running PHP 5.6, you MUST upgrade PHP before installing WPForms Post Submissions 1.6.0. Failure to do that will disable WPForms Post Submissions functionality.
+- Support for WordPress 5.4 and below has been discontinued. If you are running any outdated versions, you MUST upgrade WordPress before installing WPForms Post Submissions 1.6.0. Failure to do that will disable WPForms Post Submissions functionality.
+
+### Changed
+- The minimum WPForms version supported is 1.8.4.
+- The help tooltip was removed in the Form Builder for consistency.
+
+### Fixed
+- Events were not created if the "Enable the Gutenberg block editor interface for creating events" option was enabled in the Events Calendar 6.3.5 plugin.
 
 ## [1.5.0] - 2023-08-08
 ### Changed

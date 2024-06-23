@@ -3,11 +3,11 @@
  * Plugin Name:       WPForms Post Submissions
  * Plugin URI:        https://wpforms.com
  * Description:       Post Submissions with WPForms.
- * Requires at least: 5.2
- * Requires PHP:      5.5
+ * Requires at least: 5.5
+ * Requires PHP:      7.0
  * Author:            WPForms
  * Author URI:        https://wpforms.com
- * Version:           1.5.0
+ * Version:           1.6.0
  * Text Domain:       wpforms-post-submissions
  * Domain Path:       languages
  *
@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-const WPFORMS_POST_SUBMISSIONS_VERSION = '1.5.0';
+const WPFORMS_POST_SUBMISSIONS_VERSION = '1.6.0';
 
 /**
  * Plugin file.
@@ -70,7 +70,7 @@ function wpforms_post_submissions_load() {
 
 	$requirements = [
 		'file'    => WPFORMS_POST_SUBMISSIONS_FILE,
-		'wpforms' => '1.8.3',
+		'wpforms' => '1.8.4',
 	];
 
 	if ( ! function_exists( 'wpforms_requirements' ) || ! wpforms_requirements( $requirements ) ) {

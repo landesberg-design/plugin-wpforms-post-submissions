@@ -1,7 +1,13 @@
 <?php
 
+// phpcs:disable Generic.Commenting.DocComment.MissingShort
+/** @noinspection PhpUndefinedClassInspection */
+/** @noinspection PhpIllegalPsrClassPathInspection */
+// phpcs:enable Generic.Commenting.DocComment.MissingShort
+
 namespace WPFormsPostSubmissions;
 
+use Tribe__Timezones;
 use WP_Post;
 use WP_User_Query;
 use WPForms_Field_File_Upload;
@@ -53,7 +59,7 @@ class Plugin {
 	 */
 	private function hooks() {
 
-		add_action( 'init', [ $this, 'load_template' ], 15, 1 );
+		add_action( 'init', [ $this, 'load_template' ], 15 );
 		add_action( 'wpforms_builder_enqueues', [ $this, 'admin_enqueues' ] );
 		add_action( 'wpforms_builder_strings', [ $this, 'add_strings' ], 10, 2 );
 		add_filter( 'wpforms_process_before_form_data', [ $this, 'override_file_uploads' ], 10, 2 );
@@ -130,8 +136,10 @@ class Plugin {
 	 * @param WP_Post $form    Active form.
 	 *
 	 * @return array
+	 * @noinspection PhpMissingParamTypeInspection
+	 * @noinspection PhpUnusedParameterInspection
 	 */
-	public function add_strings( $strings, $form ) {
+	public function add_strings( $strings, $form ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 
 		$strings['post_submissions'] = [
 			'disabling_options' => esc_html__( 'Some of the Field Options for the selected field will be disabled to prevent changes as long as the field is being used as the Post Featured Image.', 'wpforms-post-submissions' ),
@@ -157,8 +165,10 @@ class Plugin {
 	 * @param array $entry     Entry.
 	 *
 	 * @return array
+	 * @noinspection PhpMissingParamTypeInspection
+	 * @noinspection PhpUnusedParameterInspection
 	 */
-	public function override_file_uploads( $form_data, $entry ) {
+	public function override_file_uploads( $form_data, $entry ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 
 		$settings = $form_data['settings'];
 		$fields   = $form_data['fields'];
@@ -193,6 +203,9 @@ class Plugin {
 	 * @param array $entry     The post data submitted by the form.
 	 * @param array $form_data The information for the form.
 	 * @param int   $entry_id  Entry ID.
+	 *
+	 * @noinspection PhpMissingParamTypeInspection
+	 * @noinspection PhpUnusedParameterInspection
 	 */
 	public function process_post_submission( $fields, $entry, $form_data, $entry_id = 0 ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded, Generic.Metrics.NestingLevel.MaxExceeded, WPForms.PHP.HooksMethod.InvalidPlaceForAddingHooks
 
@@ -234,7 +247,7 @@ class Plugin {
 		// Post Author.
 		if ( ! empty( $settings['post_submissions_author'] ) ) {
 			if ( $settings['post_submissions_author'] === 'current_user' ) {
-				$post_args['post_author'] = ! empty( $entry_data ) ? $entry_data->user_id : get_current_user_id();
+				$post_args['post_author'] = $entry_data->user_id ?? get_current_user_id();
 
 				if ( $post_args['post_author'] === 0 ) {
 					$form                     = get_post( $form_data['id'], ARRAY_A );
@@ -282,9 +295,9 @@ class Plugin {
 
 						update_post_meta( $post_id, '_thumbnail_id', $file['attachment_id'] );
 
-						$filetype = wp_check_filetype( $file['file'], null );
+						$filetype = wp_check_filetype( $file['file'] );
 
-						// Attach featured image to the post.
+						// Attach the featured image to the post.
 						wp_insert_attachment(
 							[
 								'ID'             => $file['attachment_id'],
@@ -305,7 +318,7 @@ class Plugin {
 					) {
 						update_post_meta( $post_id, '_thumbnail_id', $file['value_raw'][0]['attachment_id'] );
 
-						// Attach featured image to the post.
+						// Attach the featured image to the post.
 						wp_insert_attachment(
 							[
 								'ID'             => $file['value_raw'][0]['attachment_id'],
@@ -341,7 +354,7 @@ class Plugin {
 
 								update_post_meta( $post_id, esc_html( $key ), $fields[ $id ]['attachment_id'] );
 
-								$filetype = wp_check_filetype( $fields[ $id ]['file'], null );
+								$filetype = wp_check_filetype( $fields[ $id ]['file'] );
 
 								// Attach file to the post.
 								wp_insert_attachment(
@@ -404,8 +417,11 @@ class Plugin {
 			}
 		}
 
+		// Events Calendar.
+		$this->maybe_add_timezone_to_events_calendar_post( $post_id, $settings );
+
 		// Post Taxonomies.
-		foreach ( $fields as $id => $field ) {
+		foreach ( $fields as $field ) {
 
 			if ( ! empty( $field['dynamic_taxonomy'] ) && ! empty( $field['dynamic_items'] ) ) {
 
@@ -455,7 +471,7 @@ class Plugin {
 			return $value;
 		}
 
-		// Set a date value with required format.
+		// Set a date value with the required format.
 		$value = gmdate( 'Y-m-d H:i:s', $field['unix'] );
 
 		if ( class_exists( 'Tribe__Timezones' ) && in_array( $key, [ '_EventStartDateUTC', '_EventEndDateUTC' ], true ) ) {
@@ -463,6 +479,25 @@ class Plugin {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Maybe add timezone to Events Calendar post.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param int   $post_id  Post ID.
+	 * @param array $settings Form settings.
+	 */
+	private function maybe_add_timezone_to_events_calendar_post( int $post_id, array $settings ) {
+
+		if (
+			class_exists( 'Tribe__Timezones' ) &&
+			! empty( $settings['post_submissions_meta'] ) &&
+			array_diff_key( $settings['post_submissions_meta'], [ '_EventStartDate', '_EventEndDate', '_EventStartDateUTC', '_EventEndDateUTC' ] )
+		) {
+			update_post_meta( $post_id, '_EventTimezone', Tribe__Timezones::wp_timezone_string() );
+		}
 	}
 
 	/**
@@ -474,8 +509,10 @@ class Plugin {
 	 * @param array $form_data Form data.
 	 *
 	 * @return array
+	 * @noinspection PhpMissingParamTypeInspection
+	 * @noinspection PhpUnusedParameterInspection
 	 */
-	public function settings_register( $sections, $form_data ) {
+	public function settings_register( $sections, $form_data ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 
 		$sections['post_submissions'] = esc_html__( 'Post Submissions', 'wpforms-post-submissions' );
 
@@ -488,23 +525,16 @@ class Plugin {
 	 * @since 1.0.0
 	 *
 	 * @param object $instance Object instance.
+	 *
+	 * @noinspection HtmlUnknownAttribute
 	 */
 	public function settings_content( $instance ) { //phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded
 
 		echo '<div class="wpforms-panel-content-section wpforms-panel-content-section-post_submissions">';
 
 		printf(
-			'<div class="wpforms-panel-content-section-title">
-				%s <i class="fa fa-question-circle-o wpforms-help-tooltip" title="%s"></i>
-			</div>',
-			esc_html__( 'Post Submissions', 'wpforms-post-submissions' ),
-			esc_attr(
-				sprintf(
-					'<a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a>',
-					wpforms_utm_link( 'https://wpforms.com/docs/how-to-install-and-use-the-post-submissions-addon-in-wpforms/', 'Builder Settings', 'Post Submissions Tooltip' ),
-					__( 'View Post Submissions addon documentation', 'wpforms-post-submissions' )
-				)
-			)
+			'<div class="wpforms-panel-content-section-title">%s</div>',
+			esc_html__( 'Post Submissions', 'wpforms-post-submissions' )
 		);
 
 		// Toggle.
@@ -641,8 +671,8 @@ class Plugin {
 		?>
 
 		<div class="wpforms-field-map-table">
-			<h3><?php esc_html_e( 'Custom Post Meta', 'wpforms-post-submissions' ); ?></h3>
-			<table>
+			<h3 id="custom-post-meta"><?php esc_html_e( 'Custom Post Meta', 'wpforms-post-submissions' ); ?></h3>
+			<table aria-describedby="custom-post-meta">
 				<tbody>
 				<?php
 				$fields = wpforms_get_form_fields( $instance->form_data );
@@ -701,7 +731,6 @@ class Plugin {
 	 */
 	private function get_wp_media_file_title( $field_data ) {
 
-		return isset( $field_data['file_user_name'] ) ? $field_data['file_user_name'] : '';
+		return $field_data['file_user_name'] ?? '';
 	}
-
 }
