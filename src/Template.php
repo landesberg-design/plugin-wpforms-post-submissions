@@ -119,7 +119,7 @@ class Template extends WPForms_Template {
 				],
 			],
 			'settings' => [
-				'antispam'                    => '1',
+				'antispam_v3'                 => '1',
 				'ajax_submit'                 => '1',
 				'confirmation_message_scroll' => '1',
 				'submit_text'                 => esc_html__( 'Submit', 'wpforms-post-submissions' ),

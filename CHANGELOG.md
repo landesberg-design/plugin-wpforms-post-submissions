@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file, formatted via [this recommendation](https://keepachangelog.com/).
 
+## [1.7.0] - 2023-08-06
+### Changed
+- The minimum WPForms version supported is 1.9.0.
+
+### Fixed
+- Compatibility with WPForms 1.9.0.
+
 ## [1.6.0] - 2023-05-01
 ### IMPORTANT
 - Support for PHP 5.6 has been discontinued. If you are running PHP 5.6, you MUST upgrade PHP before installing WPForms Post Submissions 1.6.0. Failure to do that will disable WPForms Post Submissions functionality.
